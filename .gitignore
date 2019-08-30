@@ -1,7 +1,8 @@
 ###
 # Custom ignores
 
-
+*.sqlite
+*.sqlite3
 
 
 

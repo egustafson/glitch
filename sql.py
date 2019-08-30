@@ -9,39 +9,36 @@ from sqlalchemy.sql import select, func
 metadata = MetaData()
 history = Table('history', metadata,
     Column('id', Integer, primary_key=True),
-    Column('tick', String),
-    Column('date', Date),
-    Column('open', Float),
-    Column('close', Float),
-    Column('high', Float),
-    Column('low', Float),
-    Column('vol', Integer),
+    Column('tick', String(10), nullable=False),
+    Column('date', Date, nullable=False),
+    Column('open', Float, nullable=False),
+    Column('close', Float, nullable=False),
+    Column('high', Float, nullable=False),
+    Column('low', Float, nullable=False),
+    Column('vol', Integer, nullable=False),
     Index("hist_tick_date", "tick", "date", unique=True)
 )
 
 splits = Table('splits', metadata,
     Column('id', Integer, primary_key=True),
-    Column('tick', String),
-    Column('date', Date),
-    Column('from', Integer),
-    Column('to', Integer),
-    Index('split_tick_idx', 'tick')
+    Column('tick', String(10), nullable=False, index=True),
+    Column('date', Date, nullable=False),
+    Column('from', Integer, nullable=False),
+    Column('to', Integer, nullable=False),
 )
 
 dividends = Table('dividends', metadata,
     Column('id', Integer, primary_key=True),
-    Column('tick', String),
-    Column('date', Date),
-    Column('div', Float),
-    Index('div_tick_idx', 'tick')
+    Column('tick', String(10), nullable=False, index=True),
+    Column('date', Date, nullable=False),
+    Column('div', Float, nullable=False),
 )
 
 symbols = Table('symbols', metadata,
     Column('id', Integer, primary_key=True),
-    Column('tick', String),
-    Column('longname', String),
-    Column('exchange', String),
-    Index('sym_tick_idx', 'tick')
+    Column('tick', String(10), nullable=False, index=True),
+    Column('longname', String(256)),
+    Column('exchange', String(256)),
 )
 
 class DAO(object):
@@ -61,14 +58,25 @@ class DAO(object):
         conn.execute(symbols.delete())
         conn.close()
 
+    def ping(self):
+        with self._engine.connect() as conn:
+            rs = conn.execute('SELECT 1')
+
     ## Accessors
     ##   none yet
 
-    def add_history(self, symbol, date, o, c, h, l, v):
+    def add_history(self, date, symbol, o, h, l, c, v):
         with self._engine.connect() as conn:
             conn.execute(history.insert(), [
-                {'tick': symbol, 'date': date,
-                 'open': o, 'close': c, 'high': h, 'low': l, 'vol': v } ])
+                {'date': date, 'tick': symbol,
+                 'open': o, 'high': h, 'low': l, 'close': c, 'vol': v } ])
+
+    def add_bulk_history(self, data):
+        with self._engine.connect() as conn:
+            for (d, t, o, h, l, c, v) in data:
+                conn.execute(history.insert(), [
+                    {'date': d, 'tick': t,
+                    'open': o, 'high': h, 'low': l, 'close': c, 'vol': v } ])
 
 
 dao = None

@@ -5,8 +5,8 @@ import unittest
 
 import sql
 
-#URL = 'sqlite:///:memory:'
-URL = 'sqlite:///test.db'
+URL = 'sqlite:///:memory:'
+#URL = 'sqlite:///test.sqlite'
 
 
 class TestSQL(unittest.TestCase):
@@ -22,4 +22,4 @@ class TestSQL(unittest.TestCase):
     def test_add_history(self):
         dao = sql.init_dao(URL)
         now = datetime.date.today()
-        dao.add_history( 'TEST', now, 10, 20, 25, 5, 100 )
+        dao.add_history( now, 'TEST', 10, 20, 25, 5, 100 )

@@ -4,7 +4,9 @@
 #
 
 import click
+
 import yfdao
+import sql
 
 
 @click.group()
@@ -21,9 +23,20 @@ def fetch(ctx):
 
 @cli.command()
 @click.pass_context
-def loadone(ctx):
-    click.echo('load-one')
+def loadsome(ctx):
+    data = yfdao.download(['AAPL', 'MSFT'], period="30d")
+    #dao = sql.init_dao("sqlite:///test.sqlite")
+    dao = sql.init_dao("mysql+pymysql://root:passwd@localhost:3306/glitch")
+    dao.add_bulk_history( data )
+    dao.close()
+    print("inserted [{}] items.".format(len(data)))
 
+@cli.command()
+@click.pass_context
+def pingdb(ctx):
+    dao = sql.init_dao("mysql+pymysql://root:passwd@localhost:3306/glitch")
+    dao.ping()
+    dao.close()
 
 
 if __name__ == '__main__':

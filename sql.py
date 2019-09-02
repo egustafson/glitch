@@ -71,18 +71,15 @@ class DAO(object):
                 {'date': date, 'tick': symbol,
                  'open': o, 'high': h, 'low': l, 'close': c, 'vol': v } ])
 
-    def add_bulk_history(self, data):
+    def add_history_bulk(self, data):
         with self._engine.connect() as conn:
-            for (d, t, o, h, l, c, v) in data:
-                conn.execute(history.insert(), [
-                    {'date': d, 'tick': t,
-                    'open': o, 'high': h, 'low': l, 'close': c, 'vol': v } ])
+            conn.execute(history.insert(), data)
 
 
 dao = None
 
-def init_dao(url):
-    engine = create_engine(url)
+def init_dao(url, debug=False):
+    engine = create_engine(url, echo=debug)
     metadata.create_all(engine)
     global dao
     dao = DAO(engine)

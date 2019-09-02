@@ -8,11 +8,11 @@ import yfinance as yf
 
 if __name__ == '__main__':
 
-    pythonic = False
+    pythonic = True
 
     if pythonic:
 
-        msft = yf.Ticker("MSFT")
+        msft = yf.Ticker("AAPL")
 
         print(msft.info)
         print("==========")
@@ -20,10 +20,20 @@ if __name__ == '__main__':
         print("==========")
         print(msft.splits)
         print("==========")
-        print(msft.history(period="max", auto_adjust=False))
+        print(msft.history(start="2014-06-01", end="2014-06-30", auto_adjust=False))
 
     else:
-        data = yf.download(["SPY", "AAPL"], start="2019-01-01", end="2019-02-01", group_by="ticker")
+        tickers = ["SPY", "AAPL"]   # note, there has to be >1 tick in the list
+        print(type(tickers))
+        print(tickers)
+        print("-----")
+        t = tickers if isinstance(
+            tickers, list) else tickers.replace(',', ' ').split()
+        t = list(set([ticker.upper() for ticker in t]))
+        print(type(t))
+        print(t)
+
+        data = yf.download(tickers, period="5d", group_by="ticker", threads=False)
 
         print(data['SPY'])
 

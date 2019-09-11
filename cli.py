@@ -36,6 +36,24 @@ def csv(ctx, period, start, end, tickers):
         print("{date}, {tick:>4}, {open:8.2f}, {high:8.2f}, {low:8.2f}, {close:8.2f}, {vol:>12}".format(**row))
 
 @cli.command()
+@click.argument('symbol', required=True, nargs=1)
+@click.pass_context
+def dump(ctx, symbol):
+    dao = sql.init_dao(ctx.obj['dburl'], ctx.obj['debug'])
+    hist = dao.history(symbol)
+    for row in hist:
+        print("{date}, {tick:>4}, {open:8.2f}, {high:8.2f}, {low:8.2f}, {close:8.2f}, {vol:>12}".format(**row))
+
+
+@cli.command()
+@click.pass_context
+def list(ctx):
+    dao = sql.init_dao(ctx.obj['dburl'], ctx.obj['debug'])
+    symbols = dao.list_symbols()
+    for s in symbols:
+        print("{}".format(s))
+
+@cli.command()
 @click.argument('tickers', required=True, nargs=-1)
 @click.pass_context
 def load(ctx, tickers):

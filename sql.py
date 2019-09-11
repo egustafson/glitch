@@ -3,7 +3,7 @@
 
 from sqlalchemy import create_engine
 from sqlalchemy import Table, Index, Column, MetaData, ForeignKey
-from sqlalchemy import Integer, Float, String, Date
+from sqlalchemy import Integer, Float, String, Date, Boolean
 from sqlalchemy.sql import select, func
 
 metadata = MetaData()
@@ -39,6 +39,7 @@ symbols = Table('symbols', metadata,
     Column('tick', String(10), nullable=False, index=True),
     Column('longname', String(256)),
     Column('exchange', String(256)),
+    Column('active', Boolean),
 )
 
 class DAO(object):
@@ -63,7 +64,24 @@ class DAO(object):
             rs = conn.execute('SELECT 1')
 
     ## Accessors
-    ##   none yet
+
+    def list_symbols(self):
+        symbols = []
+        with self._engine.connect() as conn:
+            s = select([history.c.tick]).order_by(history.c.tick).distinct()
+            for row in conn.execute(s):
+                symbols.append(row[0])
+        return symbols
+
+    def history(self, symbol):
+        hist = []
+        with self._engine.connect() as conn:
+            s = select([history]).\
+              where(history.c.tick == symbol).order_by(history.c.date)
+            for r in conn.execute(s):
+                hist.append({ 'tick': r[1], 'date': r[2], 'open': r[3],
+                              'close': r[4], 'high': r[5], 'low': r[6], 'vol': r[7] })
+        return hist
 
     def add_history(self, date, symbol, o, h, l, c, v):
         with self._engine.connect() as conn:

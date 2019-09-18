@@ -39,6 +39,7 @@ symbols = Table('symbols', metadata,
     Column('tick', String(10), nullable=False, index=True),
     Column('longname', String(256)),
     Column('exchange', String(256)),
+    Column('exchange_tz', String(256)),
     Column('active', Boolean),
 )
 
@@ -65,13 +66,30 @@ class DAO(object):
 
     ## Accessors
 
-    def list_symbols(self):
-        symbols = []
+    def add_symbol(self, symbol, name, ex, ex_tz):
         with self._engine.connect() as conn:
-            s = select([history.c.tick]).order_by(history.c.tick).distinct()
+            conn.execute(symbols.insert(), [
+                {'tick':symbol, 'longname':name,'exchange':ex,
+                 'exchange_tz': ex_tz, 'active':False} ])
+
+    def enable_symbol(self, symbol, enable=True):
+        with self._engine.connect() as conn:
+            conn.execute(symbols.update().\
+                          where(symbols.c.tick == symbol).\
+                          values(active=enable))
+
+    def list_symbols(self, inactive=False):
+        ll = []
+        with self._engine.connect() as conn:
+            if inactive:
+                s = select([symbols.c.tick]).order_by(symbols.c.tick)
+            else:
+                s = select([symbols.c.tick]).\
+                     where(symbols.c.active == True).\
+                     order_by(symbols.c.tick)
             for row in conn.execute(s):
-                symbols.append(row[0])
-        return symbols
+                ll.append(row[0])
+        return ll
 
     def history(self, symbol):
         hist = []

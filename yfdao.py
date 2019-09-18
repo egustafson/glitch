@@ -6,6 +6,9 @@
 
 import yfinance as yf
 
+def info(symbol):
+    return yf.Ticker(symbol).info
+
 def download(tickers, **args):
 
     df = yf.download(tickers, group_by="ticker", threads=False, progress=False, **args)

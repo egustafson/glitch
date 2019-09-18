@@ -14,7 +14,9 @@ if __name__ == '__main__':
 
         msft = yf.Ticker("AAPL")
 
-        print(msft.info)
+        print("========== .info()")
+        for (k,v) in msft.info.items():
+            print("{}: {}".format(k, v))
         print("==========")
         print(msft.dividends)
         print("==========")

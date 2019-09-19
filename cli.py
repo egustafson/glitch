@@ -52,34 +52,22 @@ def list(ctx, all_syms):
         print("{}".format(s))
 
 @cli.command()
-@click.argument('tickers', required=True, nargs=-1)
+@click.argument('symbols', required=True, nargs=-1)
 @click.pass_context
-def load(ctx, tickers):
-    #tickers = ["AAPL", "MSFT", "SPY"]
-    tickers = [ t.upper() for t in tickers ]
-    period = "max"
-    db_url = ctx.obj['dburl']
-    #
-    loadcnt = 0
-    starttime = time.time()
-    for tick in tickers:
-        data = yfdao.download([tick], period=period)
-        #print("fetched [{}] items, next step: insert into DB.".format(len(data)))
-        sql.dao.add_history_bulk( data )
-        #print("inserted [{}] items.".format(len(data)))
-        print("{}({})".format(tick, len(data)), end=" ", flush=True)
-        loadcnt += len(data)
-    sql.dao.close()
-    endtime = time.time()
-    print("")
-    print("Loaded {} rows, {} tickers, in {:.2} seconds".format(loadcnt, len(tickers), endtime-starttime))
+def load(ctx, symbols):
+    db.load_symbols(symbols)
+
+@cli.command()
+@click.argument('symbol', required=True)
+@click.pass_context
+def reset(ctx, symbol):
+    db.reset_symbol(symbol)
 
 @cli.command()
 @click.pass_context
 def pingdb(ctx):
     sql.dao.ping()
     sql.dao.close()
-
 
 @cli.command()
 @click.pass_context

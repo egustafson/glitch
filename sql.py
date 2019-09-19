@@ -23,8 +23,7 @@ splits = Table('splits', metadata,
     Column('id', Integer, primary_key=True),
     Column('tick', String(10), nullable=False, index=True),
     Column('date', Date, nullable=False),
-    Column('from', Integer, nullable=False),
-    Column('to', Integer, nullable=False),
+    Column('ratio', Float, nullable=False),
 )
 
 dividends = Table('dividends', metadata,
@@ -91,6 +90,15 @@ class DAO(object):
                 ll.append(row[0])
         return ll
 
+    def clear_history(self, symbol):
+        with self._engine.connect() as conn:
+            dh = history.delete().where(history.c.tick == symbol)
+            conn.execute(dh)
+            ds = splits.delete().where(splits.c.tick == symbol)
+            conn.execute(ds)
+            dd = dividends.delete().where(dividends.c.tick == symbol)
+            conn.execute(dd)
+
     def history(self, symbol):
         hist = []
         with self._engine.connect() as conn:
@@ -110,6 +118,14 @@ class DAO(object):
     def add_history_bulk(self, data):
         with self._engine.connect() as conn:
             conn.execute(history.insert(), data)
+
+    def add_splits(self, split_list):
+        with self._engine.connect() as conn:
+            conn.execute(splits.insert(), split_list)
+
+    def add_dividends(self, div_list):
+        with self._engine.connect() as conn:
+            conn.execute(dividends.insert(), div_list)
 
 
 dao = None

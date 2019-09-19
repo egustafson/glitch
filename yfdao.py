@@ -9,29 +9,28 @@ import yfinance as yf
 def info(symbol):
     return yf.Ticker(symbol).info
 
-def download(tickers, **args):
+def load(sym):
+    t = yf.Ticker(sym)
+    hdf = t.history(period='max', interval='1d', prepost=False,
+                  auto_adjust=False) ##, rounding=False)
+    hist = []
+    for index, row in hdf.iterrows():
+            hist.append( { 'date':  index.date(),
+                           'tick':  sym.upper(),
+                           'open':  row['Open'].item(),
+                           'high':  row['High'].item(),
+                           'low':   row['Low'].item(),
+                           'close': row['Close'].item(),
+                           'vol':   row['Volume'].item() } )
+    divs = []
+    for index, value in t.get_dividends().items():
+            divs.append( { 'date':  index.date(),
+                           'tick':  sym.upper(),
+                           'div':   value } )
+    splits = []
+    for index, value in t.get_splits().items():
+        splits.append( { 'date':  index.date(),
+                         'tick':  sym.upper(),
+                         'ratio': value } )
 
-    df = yf.download(tickers, group_by="ticker", threads=False, progress=False, **args)
-
-    results = []
-    if len(tickers) == 1:  ## then the dataframe doesn't have an axis for the tick
-        for index, row in df.iterrows():
-            results.append( { 'date':  index.date(),
-                                  'tick':  tickers[0].upper(),
-                                  'open':  row['Open'].item(),
-                                  'high':  row['High'].item(),
-                                  'low':   row['Low'].item(),
-                                  'close': row['Close'].item(),
-                                  'vol':   row['Volume'].item() } )
-    else:
-        for tick in tickers:
-            for index, row in df[tick].iterrows():
-                results.append( { 'date':  index.date(),
-                                  'tick':  tick,
-                                  'open':  row['Open'].item(),
-                                  'high':  row['High'].item(),
-                                  'low':   row['Low'].item(),
-                                  'close': row['Close'].item(),
-                                  'vol':   row['Volume'].item() } )
-
-    return results
+    return (hist, splits, divs)

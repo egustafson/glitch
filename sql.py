@@ -42,6 +42,15 @@ symbols = Table('symbols', metadata,
     Column('active', Boolean),
 )
 
+indicators = Table('indicators', metadata,
+    Column('id', Integer, primary_key=True),
+    Column('tick', String(10), nullable=False, index=True),
+    Column('date', Date, nullable=False),
+    Column('ind_id', String(10), nullable=False),
+    Column('value', Float, nullable=False),
+)
+
+
 class DAO(object):
 
     def __init__(self, engine):
